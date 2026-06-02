@@ -21,9 +21,27 @@ export function AddressBadge({
   const displayAddress = shortAddress || `${address.slice(0, 6)}...${address.slice(-4)}`
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(address)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for environments where Clipboard API is blocked
+      const textArea = document.createElement('textarea')
+      textArea.value = address
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch {
+        // Silent fail if copy is not supported
+      }
+      document.body.removeChild(textArea)
+    }
   }
 
   const explorerUrl = `https://explorer.xyo.network/address/${address}`
